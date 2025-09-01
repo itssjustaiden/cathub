@@ -8,7 +8,7 @@ local Catsaken = Rayfield:CreateWindow({
    LoadingTitle = "cats",
    LoadingSubtitle = "meow",
    ShowText = "",
-   Theme = "Default",
+   Theme = "Bloom",
    ToggleUIKeybind = "K",
    DisableRayfieldPrompts = true,
    DisableBuildWarnings = true,
@@ -182,7 +182,13 @@ local chamstoggleesp = esptab:CreateToggle({
       end
    end,
 })
-
+local optab = Catsaken:CreateTab("Options", 0)
+local defaultheme = optab:CreateButton({
+   Name = "Better Theme",
+   Callback = function()
+   Catsaken.ModifyTheme('Default')
+   end,
+})
 Yourself.CharacterAdded:Connect(function()
    task.wait(1)
    JohnDoe()
