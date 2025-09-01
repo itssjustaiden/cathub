@@ -255,72 +255,119 @@ local AutoGenSlider = gentab:CreateSlider({
 
 -- U L T R A K I L L --
 local autoblocktab = Catsaken:CreateTab("Parry.", 0)
+
 local autoBlockOn = false
 local autoErrorEnabled = false
 local looseFacing = true
 local facingCheckEnabled = true
 local detectionRange = 18
-local detectionRangeSq = detectionRange*detectionRange
+local detectionRangeSq = detectionRange * detectionRange
 local errorDetectionRange = 14
-local errorTriggeredUntil = {}
 local soundHooksMerged = {}
 local soundTriggeredUntil404 = {}
-local sexyon0 = autoblocktab:CreateSection("Guest parry")
+
+local ragingPaceEnabled = false
+local RAGING_SPAM_DURATION = 3
+local RAGING_COOLDOWN = 5
+local ragingActiveCooldowns = {}
+local savedRagingRange = Yourself:FindFirstChild("RagingPaceRange")
+if not savedRagingRange then
+    savedRagingRange = Instance.new("NumberValue")
+    savedRagingRange.Name = "RagingPaceRange"
+    savedRagingRange.Value = 19
+    savedRagingRange.Parent = Yourself
+end
+local RAGING_RANGE = savedRagingRange.Value
+
+autoblocktab:CreateSection("Guest parry")
 local autoblocktoggleXD = autoblocktab:CreateToggle({
     Name = "Auto Block",
     CurrentValue = false,
     Flag = "AutoBlockFR",
-    Callback = function(state) autoBlockOn = state end,
+    Callback = function(state) autoBlockOn = state end
 })
 local autoblockfacingcheckXD = autoblocktab:CreateToggle({
     Name = "Enable Facing Check",
     CurrentValue = true,
     Flag = "FacingCheckToggle",
-    Callback = function(val) facingCheckEnabled = val end,
+    Callback = function(val) facingCheckEnabled = val end
 })
 local autoblockfacingmodeXD = autoblocktab:CreateDropdown({
     Name = "Facing Check",
-    Options = {"Loose","Strict"},
+    Options = {"Loose", "Strict"},
     CurrentOption = "Loose",
     Flag = "FacingCheckMode",
-    Callback = function(option) looseFacing = option=="Loose" end,
+    Callback = function(option) looseFacing = option == "Loose" end
 })
 local autoblockdetectionrangeXD = autoblocktab:CreateInput({
     Name = "Detection Range",
     PlaceholderText = "18",
-    RemoveTextAfterFocusLost=false,
-    Flag="DetectionRange",
-    Callback=function(text)
-        detectionRange=tonumber(text) or detectionRange
-        detectionRangeSq=detectionRange*detectionRange
-    end,
+    RemoveTextAfterFocusLost = false,
+    Flag = "DetectionRange",
+    Callback = function(text)
+        detectionRange = tonumber(text) or detectionRange
+        detectionRangeSq = detectionRange * detectionRange
+    end
 })
-local sexyon1 = autoblocktab:CreateSection("John doe parry")
+
+autoblocktab:CreateSection("John doe parry")
 local autoblockErrorToggle = autoblocktab:CreateToggle({
     Name = "Error 404 parry",
     CurrentValue = false,
     Flag = "error404_parry",
-    Callback = function(state) autoErrorEnabled = state end,
+    Callback = function(state) autoErrorEnabled = state end
 })
 local autoblockErrorRange = autoblocktab:CreateSlider({
     Name = "Error 404 range",
-    Range={5,50},
-    Increment=1,
-    Suffix=" studs",
-    CurrentValue=errorDetectionRange,
-    Flag="error404_range",
-    Callback=function(val) errorDetectionRange = val end,
+    Range = {5, 50},
+    Increment = 1,
+    Suffix = " studs",
+    CurrentValue = errorDetectionRange,
+    Flag = "error404_range",
+    Callback = function(val) errorDetectionRange = val end
 })
 
--- SOUND IDS
-local autoBlockTriggerSounds = {["102228729296384"]=true,["140242176732868"]=true,["112809109188560"]=true,["136323728355613"]=true,["115026634746636"]=true,["84116622032112"]=true,["108907358619313"]=true,["127793641088496"]=true,["86174610237192"]=true,["95079963655241"]=true,["101199185291628"]=true,["119942598489800"]=true,["84307400688050"]=true,["113037804008732"]=true,["105200830849301"]=true,["75330693422988"]=true,["82221759983649"]=true,["81702359653578"]=true,["108610718831698"]=true,["112395455254818"]=true}
-local autoErrorTriggerSounds={["86710781315432"]=true,["99820161736138"]=true,["609342351"]=true,["81976396729343"]=true,["12222225"]=true,["80521472651047"]=true,["139012439429121"]=true,["91194698358028"]=true,["111910850942168"]=true,["83851356262523"]=true}
+autoblocktab:CreateSection("Raging Pace Parry")
+local ragingToggle = autoblocktab:CreateToggle({
+    Name = "Raging Parry",
+    CurrentValue = false,
+    Flag = "raging_pace_auto",
+    Callback = function(val) ragingPaceEnabled = val end
+})
+local ragingRangeSlider = autoblocktab:CreateSlider({
+    Name = "Parry Range Range",
+    Range = {1, 50},
+    Increment = 1,
+    Suffix = " studs",
+    CurrentValue = RAGING_RANGE,
+    Flag = "raging_range_slider",
+    Callback = function(val)
+        RAGING_RANGE = val
+        savedRagingRange.Value = val
+    end
+})
 
--- HELPERS
+local autoBlockTriggerSounds = {
+    ["102228729296384"] = true, ["140242176732868"] = true, ["112809109188560"] = true,
+    ["136323728355613"] = true, ["115026634746636"] = true, ["84116622032112"] = true,
+    ["108907358619313"] = true, ["127793641088496"] = true, ["86174610237192"] = true,
+    ["95079963655241"] = true, ["101199185291628"] = true, ["119942598489800"] = true,
+    ["84307400688050"] = true, ["113037804008732"] = true, ["105200830849301"] = true,
+    ["75330693422988"] = true, ["82221759983649"] = true, ["81702359653578"] = true,
+    ["108610718831698"] = true, ["112395455254818"] = true
+}
+local autoErrorTriggerSounds = {
+    ["86710781315432"] = true, ["99820161736138"] = true, ["609342351"] = true,
+    ["81976396729343"] = true, ["12222225"] = true, ["80521472651047"] = true,
+    ["139012439429121"] = true, ["91194698358028"] = true, ["111910850942168"] = true,
+    ["83851356262523"] = true
+}
+
 local function extractNumericSoundId(sound)
     if not sound or not sound.SoundId then return nil end
     return tostring(sound.SoundId):match("%d+")
 end
+
 local function getSoundWorldPosition(sound)
     if not sound then return nil end
     if sound.Parent and sound.Parent:IsA("BasePart") then return sound.Parent.Position end
@@ -329,79 +376,125 @@ local function getSoundWorldPosition(sound)
     end
     return nil
 end
+
 local function getCharacterFromDescendant(inst)
     if not inst then return nil end
     local model = inst:FindFirstAncestorOfClass("Model")
     if model and model:FindFirstChildOfClass("Humanoid") then return model end
     return nil
 end
-local function isFacing(localRoot,targetRoot)
+
+local function isFacing(localRoot, targetRoot)
     if not facingCheckEnabled then return true end
-    local dir=(localRoot.Position-targetRoot.Position).Unit
-    local dot=targetRoot.CFrame.LookVector:Dot(dir)
-    return looseFacing and dot>-0.3 or dot>0
+    local dir = (localRoot.Position - targetRoot.Position).Unit
+    local dot = targetRoot.CFrame.LookVector:Dot(dir)
+    return looseFacing and dot > -0.3 or dot > 0
 end
+
 local function fireRemoteBlock()
-    local args={"UseActorAbility","Block"}
+    local args = {"UseActorAbility", "Block"}
     ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
 end
 
--- ATTEMPT LOGIC
 local function attemptSoundReaction(sound)
     if not sound or not sound:IsA("Sound") or not sound.IsPlaying then return end
-    local id=extractNumericSoundId(sound)
-    local myChar=Yourself.Character
-    local myRoot=myChar and myChar:FindFirstChild("HumanoidRootPart")
+    local id = extractNumericSoundId(sound)
+    local myChar = Yourself.Character
+    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
     if not myRoot then return end
-    local soundPos=getSoundWorldPosition(sound)
-    local char=getCharacterFromDescendant(sound.Parent)
-    local plr=char and Hallucinations:GetPlayerFromCharacter(char)
-    local hrp=char and char:FindFirstChild("HumanoidRootPart")
+    local soundPos = getSoundWorldPosition(sound)
+    local char = getCharacterFromDescendant(sound.Parent)
+    local plr = char and Hallucinations:GetPlayerFromCharacter(char)
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
 
-    -- AUTO BLOCK
-    if autoBlockOn and id and autoBlockTriggerSounds[id] and plr and plr~=Yourself and hrp then
-        local dvec=hrp.Position-myRoot.Position
-        local distSq=dvec.X*dvec.X+dvec.Y*dvec.Y+dvec.Z*dvec.Z
-        if distSq<=detectionRangeSq and (not facingCheckEnabled or isFacing(myRoot,hrp)) then
+    if autoBlockOn and id and autoBlockTriggerSounds[id] and plr and plr ~= Yourself and hrp then
+        local dvec = hrp.Position - myRoot.Position
+        local distSq = dvec.X*dvec.X + dvec.Y*dvec.Y + dvec.Z*dvec.Z
+        if distSq <= detectionRangeSq and (not facingCheckEnabled or isFacing(myRoot, hrp)) then
             fireRemoteBlock()
         end
     end
 
-    -- ERROR 404 PARRY
-if autoErrorEnabled and id and autoErrorTriggerSounds[id] then
-    if soundTriggeredUntil404[sound] and tick() < soundTriggeredUntil404[sound] then return end
-    local pos = soundPos or myRoot.Position -- fallback
-    if (myRoot.Position - pos).Magnitude <= errorDetectionRange then
-        local args = {"UseActorAbility","404Error"}
-        ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
-        soundTriggeredUntil404[sound] = tick() + 1.2
+    if autoErrorEnabled and id and autoErrorTriggerSounds[id] then
+        if soundTriggeredUntil404[sound] and tick() < soundTriggeredUntil404[sound] then return end
+        local pos = soundPos or myRoot.Position
+        if (myRoot.Position - pos).Magnitude <= errorDetectionRange then
+            ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer("UseActorAbility", "404Error")
+            soundTriggeredUntil404[sound] = tick() + 1.2
+        end
     end
 end
 
-
--- HOOK
 local function hookSound(sound)
     if soundHooksMerged[sound] then return end
-    local playedConn=sound.Played:Connect(function() pcall(attemptSoundReaction,sound) end)
-    local propConn=sound:GetPropertyChangedSignal("IsPlaying"):Connect(function()
-        if sound.IsPlaying then pcall(attemptSoundReaction,sound) end
+    local playedConn = sound.Played:Connect(function() pcall(attemptSoundReaction, sound) end)
+    local propConn = sound:GetPropertyChangedSignal("IsPlaying"):Connect(function()
+        if sound.IsPlaying then pcall(attemptSoundReaction, sound) end
     end)
     local destroyConn
-    destroyConn=sound.Destroying:Connect(function()
+    destroyConn = sound.Destroying:Connect(function()
         if playedConn.Connected then playedConn:Disconnect() end
         if propConn.Connected then propConn:Disconnect() end
         if destroyConn.Connected then destroyConn:Disconnect() end
-        soundHooksMerged[sound]=nil
-        soundTriggeredUntil404[sound]=nil
+        soundHooksMerged[sound] = nil
+        soundTriggeredUntil404[sound] = nil
     end)
-    soundHooksMerged[sound]={playedConn,propConn,destroyConn}
-    if sound.IsPlaying then task.spawn(function() pcall(attemptSoundReaction,sound) end) end
+    soundHooksMerged[sound] = {playedConn, propConn, destroyConn}
+    if sound.IsPlaying then task.spawn(function() pcall(attemptSoundReaction, sound) end) end
 end
 
-for _,s in ipairs(game:GetDescendants()) do if s:IsA("Sound") then pcall(hookSound,s) end end
-game.DescendantAdded:Connect(function(d) if d:IsA("Sound") then pcall(hookSound,d) end end)
+for _, s in ipairs(game:GetDescendants()) do
+    if s:IsA("Sound") then pcall(hookSound, s) end
+end
+game.DescendantAdded:Connect(function(d)
+    if d:IsA("Sound") then pcall(hookSound, d) end
+end)
 
+local ragingAnims = {
+    ["116618003477002"]=true, ["119462383658044"]=true, ["131696603025265"]=true,
+    ["121255898612475"]=true, ["133491532453922"]=true, ["103601716322988"]=true,
+    ["86371356500204"]=true, ["72722244508749"]=true, ["87259391926321"]=true,
+    ["96959123077498"]=true
+}
+local function fireRagingPace()
+    ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer("UseActorAbility", "RagingPace")
+end
+local function isAnimMatching(anim)
+    local id = tostring(anim.Animation and anim.Animation.AnimationId or "")
+    local num = id:match("%d+")
+    return ragingAnims[num] or false
+end
 
+game:GetService("RunService").Heartbeat:Connect(function()
+    if not ragingPaceEnabled then return end
+    for _, plr in ipairs(Hallucinations:GetPlayers()) do
+        if plr ~= Yourself and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            local targetHRP = plr.Character.HumanoidRootPart
+            local myChar = Yourself.Character
+            if myChar and myChar:FindFirstChild("HumanoidRootPart") then
+                local dist = (targetHRP.Position - myChar.HumanoidRootPart.Position).Magnitude
+                if dist <= RAGING_RANGE and (not ragingActiveCooldowns[plr] or tick() - ragingActiveCooldowns[plr] >= RAGING_COOLDOWN) then
+                    local hum = plr.Character:FindFirstChildOfClass("Humanoid")
+                    if hum then
+                        for _, track in pairs(hum:GetPlayingAnimationTracks()) do
+                            if isAnimMatching(track) then
+                                ragingActiveCooldowns[plr] = tick()
+                                task.spawn(function()
+                                    local startTime = tick()
+                                    while tick() - startTime < RAGING_SPAM_DURATION do
+                                        fireRagingPace()
+                                        task.wait(0.05)
+                                    end
+                                end)
+                                break
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
 
 -- MISC TAB --
 local misctab = Catsaken:CreateTab("Misc", 0)
