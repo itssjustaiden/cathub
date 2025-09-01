@@ -183,34 +183,17 @@ local chamstoggleesp = esptab:CreateToggle({
    end,
 })
 local optab = Catsaken:CreateTab("Options", 0)
-local ThemeMap = {
-    ["Default"] = "Default",
-    ["Amber Glow"] = "AmberGlow",
-    ["Amethyst"] = "Amethyst",
-    ["Bloom"] = "Bloom",
-    ["Dark Blue"] = "DarkBlue",
-    ["Green"] = "Green",
-    ["Light"] = "Light",
-    ["Ocean"] = "Ocean",
-    ["Serenity"] = "Serenity",
-}
-local Themes = {}
-for name,_ in pairs(ThemeMap) do
-    table.insert(Themes, name)
-end
 local ihatethis = optab:CreateDropdown({
     Name = "Theme Changer",
-    Options = Themes,
+    Options = {"Default","AmberGlow","Amethyst","Bloom","DarkBlue","Green","Light","Ocean","Serenity"},
     CurrentOption = {"Bloom"},
     MultipleOptions = false,
     Flag = "theme_ch4ng3r",
     Callback = function(option)
-        local identifier = ThemeMap[option]
-        if identifier then
-            Catsaken.ModifyTheme(identifier)
-        end
+        Catsaken.ModifyTheme(option)
     end,
 })
+
 Yourself.CharacterAdded:Connect(function()
    task.wait(1)
    JohnDoe()
