@@ -203,6 +203,8 @@ local KillerChams = esptab:CreateColorPicker({
         refreshESP()
     end
 })
+
+
 SurvivorColor = SurvivorsChams.Color
 KillerColor = Color3.fromRGB(255,0,0)
 -- GENS TAB --
