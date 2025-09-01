@@ -192,10 +192,51 @@ local ihatethis = optab:CreateDropdown({
     Callback = function(sel)
         local id = type(sel) == "table" and sel[1] or sel
         if not id then return end
-        local ok = pcall(function() Catsaken.ModifyTheme(id) end)
-        if not ok then pcall(function() Catsaken:ModifyTheme(id) end) end
+        local function try_method(obj, key, arg)
+            if not obj or type(obj[key]) ~= "function" then return false, nil end
+            local fn = obj[key]
+            local ok, err = pcall(fn, arg)
+            if ok then return true, "fn(arg) ok" end
+            ok, err = pcall(fn, obj, arg)
+            if ok then return true, "fn(self,arg) ok" end
+            return false, err
+        end
+        local ok, msg = try_method(Catsaken, "ModifyTheme", id)
+        if ok then return end
+        ok, msg = try_method(Rayfield, "ModifyTheme", id)
+        if ok then return end
+        local function find_theme(name)
+            if Rayfield and type(Rayfield.Themes) == "table" then
+                local t = Rayfield.Themes[name] or Rayfield.Themes[name:gsub("%s","")] or Rayfield.Themes[name:lower()]
+                if t then return t end
+            end
+            if Catsaken and type(Catsaken.Themes) == "table" then
+                local t = Catsaken.Themes[name] or Catsaken.Themes[name:gsub("%s","")] or Catsaken.Themes[name:lower()]
+                if t then return t end
+            end
+            return nil
+        end
+        local themeTable = find_theme(id)
+        if themeTable then
+            ok, msg = try_method(Catsaken, "ModifyTheme", themeTable)
+            if ok then return end
+            ok, msg = try_method(Rayfield, "ModifyTheme", themeTable)
+            if ok then return end
+        end
+        local info = {
+            "catsaken.modifytheme function? "..tostring(type(Catsaken and Catsaken.ModifyTheme) == "function"),
+            "rayfield.modifytheme function? "..tostring(type(Rayfield and Rayfield.ModifyTheme) == "function"),
+            "rayfield.themes? "..tostring(type(Rayfield and Rayfield.Themes) == "table")
+        }
+        warn("theme change failed for id: "..tostring(id).." | "..table.concat(info, " | "))
+        if Rayfield and type(Rayfield.Themes) == "table" then
+            local keys = {}
+            for k,_ in pairs(Rayfield.Themes) do table.insert(keys, k) end
+            warn("rayfield.themes list: "..table.concat(keys, ", "))
+        end
     end,
 })
+
 
 
 Yourself.CharacterAdded:Connect(function()
