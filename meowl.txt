@@ -189,6 +189,12 @@ local defaultheme = optab:CreateButton({
    Catsaken.ModifyTheme('Default')
    end,
 })
+local flashtheme = optab:CreateButton({
+   Name = "Rever Theme",
+   Callback = function()
+   Catsaken.ModifyTheme('Bloom')
+   end,
+})
 Yourself.CharacterAdded:Connect(function()
    task.wait(1)
    JohnDoe()
