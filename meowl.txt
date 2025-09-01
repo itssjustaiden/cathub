@@ -189,10 +189,14 @@ local ihatethis = optab:CreateDropdown({
     CurrentOption = {"Bloom"},
     MultipleOptions = false,
     Flag = "theme_ch4ng3r",
-    Callback = function(option)
-        Catsaken.ModifyTheme(option)
+    Callback = function(sel)
+        local id = type(sel) == "table" and sel[1] or sel
+        if not id then return end
+        local ok = pcall(function() Catsaken.ModifyTheme(id) end)
+        if not ok then pcall(function() Catsaken:ModifyTheme(id) end) end
     end,
 })
+
 
 Yourself.CharacterAdded:Connect(function()
    task.wait(1)
