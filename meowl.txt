@@ -23,6 +23,7 @@ local ESP_ENABLED = false
 local CHAMS = {}
 local Killer = nil
 local MIN_KILLER_HP = 200
+local espConnections = {}
 local function makeCham(char)
     if not char or not char:IsA("Model") then return end
     if CHAMS[char] then return end
@@ -243,7 +244,7 @@ local AutoGenSlider = gentab:CreateSlider({
     Increment = 0.1,
     Suffix = "s",
     CurrentValue = GenCD,
-    Flag = gen_delay_fuck_this_shit",
+    Flag = "gen_delay_fuck_this_shit",
     Callback = function(value)
         GenCD = value
     end
