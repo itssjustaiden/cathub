@@ -19,12 +19,10 @@ local Catsaken = Rayfield:CreateWindow({
 local Jason = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
 local Noli = require(Jason)
 local Elliot = {MaxStamina = 110, StaminaGain = 20, StaminaLoss = 10}
-
 local ESP_ENABLED = false
 local CHAMS = {}
 local Killer = nil
 local MIN_KILLER_HP = 200
-
 local function makeCham(char)
     if not char or not char:IsA("Model") then return end
     if CHAMS[char] then return end
@@ -37,28 +35,25 @@ local function makeCham(char)
     highlight.Parent = game:GetService("CoreGui")
     CHAMS[char] = highlight
 end
-
 local function clearCham(char)
     if CHAMS[char] then
         CHAMS[char]:Destroy()
         CHAMS[char] = nil
     end
 end
-
 local function updateChamColor(plr)
     if not plr.Character or not CHAMS[plr.Character] then return end
     local hum = plr.Character:FindFirstChild("Humanoid")
     if not hum then return end
     if hum.Health >= MIN_KILLER_HP then
         Killer = plr
-        CHAMS[plr.Character].FillColor = Color3.fromRGB(255,0,0)
+        CHAMS[plr.Character].FillColor = KillerColor
     else
         if plr ~= Killer then
-            CHAMS[plr.Character].FillColor = Color3.new(1,1,1)
+            CHAMS[plr.Character].FillColor = SurvivorColor
         end
     end
 end
-
 local function refreshESP()
     if not ESP_ENABLED then return end
     for _, plr in pairs(Hallucinations:GetPlayers()) do
@@ -68,7 +63,6 @@ local function refreshESP()
         end
     end
 end
-
 local function setupPlayer(plr)
     plr.CharacterAdded:Connect(function(char)
         task.wait(1)
@@ -84,15 +78,12 @@ local function setupPlayer(plr)
         end
     end)
 end
-
 for _, plr in pairs(Hallucinations:GetPlayers()) do
     if plr ~= Yourself then
         setupPlayer(plr)
     end
 end
-
 Hallucinations.PlayerAdded:Connect(setupPlayer)
-
 game:GetService("RunService").Heartbeat:Connect(function()
     if ESP_ENABLED then
         for char, _ in pairs(CHAMS) do
@@ -105,7 +96,6 @@ game:GetService("RunService").Heartbeat:Connect(function()
         end
     end
 end)
-
 local function JohnDoe()
    if Rayfield.Flags["infinite_stamina"].CurrentValue then
       Noli.StaminaLoss = 0
@@ -115,7 +105,7 @@ local function JohnDoe()
       Noli.StaminaLoss = tonumber(Rayfield.Flags["stamina_loss"].CurrentValue) or Elliot.StaminaLoss
    end
 end
-
+-- MAIN TAB --
 local maintab = Catsaken:CreateTab("Main", 0)
 local infstamina = maintab:CreateToggle({
    Name = "Infinite Stamina",
@@ -165,7 +155,7 @@ local staminaloss = maintab:CreateInput({
       end
    end,
 })
-
+-- VISUAL TAB --
 local esptab = Catsaken:CreateTab("Visuals", 0)
 local chamstoggleesp = esptab:CreateToggle({
    Name = "Chams",
@@ -182,6 +172,28 @@ local chamstoggleesp = esptab:CreateToggle({
       end
    end,
 })
+local SurvivorsChams = esptab:CreateColorPicker({
+    Name = "Survivor Chams Color",
+    Color = Color3.fromRGB(255,255,255),
+    Flag = "survivor_cham_picker",
+    Callback = function(Value)
+        SurvivorColor = Value
+        refreshESP()
+    end
+})
+
+local KillerChams = esptab:CreateColorPicker({
+    Name = "Killer Chams Color",
+    Color = Color3.fromRGB(255,255,255),
+    Flag = "killer_cham_picker",
+    Callback = function(Value)
+        KillerColor = Value
+        refreshESP()
+    end
+})
+SurvivorColor = SurvivorsChams.Color
+KillerColor = Color3.fromRGB(255,0,0)
+-- OPTIONS TAB --
 local optab = Catsaken:CreateTab("Options", 0)
 local ihatethis = optab:CreateDropdown({
     Name = "Theme Changer",
@@ -225,12 +237,8 @@ local ihatethis = optab:CreateDropdown({
         end
     end,
 })
-
-
-
 Yourself.CharacterAdded:Connect(function()
    task.wait(1)
    JohnDoe()
 end)
-
 JohnDoe()
