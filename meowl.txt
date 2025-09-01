@@ -190,7 +190,7 @@ local defaultheme = optab:CreateButton({
    end,
 })
 local flashtheme = optab:CreateButton({
-   Name = "Rever Theme",
+   Name = "Revert Theme",
    Callback = function()
    Catsaken.ModifyTheme('Bloom')
    end,
