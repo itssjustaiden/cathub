@@ -96,6 +96,17 @@ game:GetService("RunService").Heartbeat:Connect(function()
         end
     end
 end)
+local function DoGenOrSmth()
+    local IngameMapFolder = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
+    local SubMapFolder = IngameMapFolder and IngameMapFolder:FindFirstChild("Map")
+    if SubMapFolder then
+        for _, g in ipairs(SubMapFolder:GetChildren()) do
+            if g.Name == "Generator" and g.Progress.Value < 100 then
+                g.Remotes.RE:FireServer()
+            end
+        end
+    end
+end
 local function JohnDoe()
    if Rayfield.Flags["infinite_stamina"].CurrentValue then
       Noli.StaminaLoss = 0
@@ -193,6 +204,51 @@ local KillerChams = esptab:CreateColorPicker({
 })
 SurvivorColor = SurvivorsChams.Color
 KillerColor = Color3.fromRGB(255,0,0)
+-- GENS TAB --
+local gentab = Catsaken:CreateTab("Generators", 0)
+local GenCD = 4
+
+local DoGeneratorButton = gentab:CreateButton({
+    Name = "Do Generator",
+    Callback = function()
+        DoGenOrSmth()
+    end
+})
+local AutoGenToggle = gentab:CreateToggle({
+    Name = "Auto Generator",
+    CurrentValue = false,
+    Flag = "auto_gen",
+    Callback = function(enabled)
+        if espConnections["AutoGenLoop"] then
+            espConnections["AutoGenLoop"]:Disconnect()
+            espConnections["AutoGenLoop"] = nil
+        end
+        if enabled then
+            espConnections["_AutoGenTimer"] = 0
+            espConnections["AutoGenLoop"] = game:GetService("RunService").Heartbeat:Connect(function(delta)
+                espConnections["_AutoGenTimer"] = espConnections["_AutoGenTimer"] + delta
+                if espConnections["_AutoGenTimer"] >= GenCD then
+                    espConnections["_AutoGenTimer"] = 0
+                    DoGenOrSmth()
+                end
+            end)
+        else
+            espConnections["_AutoGenTimer"] = 0
+        end
+    end
+})
+local AutoGenSlider = gentab:CreateSlider({
+    Name = "Generator Delay",
+    Range = {2.5, 10},
+    Increment = 0.1,
+    Suffix = "s",
+    CurrentValue = GenCD,
+    Flag = gen_delay_fuck_this_shit",
+    Callback = function(value)
+        GenCD = value
+    end
+})
+
 -- OPTIONS TAB --
 local optab = Catsaken:CreateTab("Options", 0)
 local ihatethis = optab:CreateDropdown({
