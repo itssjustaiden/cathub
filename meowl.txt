@@ -1,0 +1,201 @@
+local Hallucinations = game:GetService("Players")
+local Yourself = Hallucinations.LocalPlayer
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Catsaken = Rayfield:CreateWindow({
+   Name = "Catsaken",
+   Icon = 0,
+   LoadingTitle = "cats",
+   LoadingSubtitle = "meow",
+   ShowText = "",
+   Theme = "Default",
+   ToggleUIKeybind = "K",
+   DisableRayfieldPrompts = true,
+   DisableBuildWarnings = true,
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "cats",
+      FileName = "catsaken"
+   },
+   KeySystem = false,
+})
+
+local Jason = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
+local Noli = require(Jason)
+local Elliot = {
+   MaxStamina = 110,
+   StaminaGain = 20,
+   StaminaLoss = 10,
+}
+
+local ESP_ENABLED = false
+local CHAMS = {}
+local KILLER_HPS = {800, 1100, 1111, 1250, 1500}
+local Killer = nil
+
+local function makeCham(char)
+    if not char or not char:IsA("Model") then return end
+    if CHAMS[char] then return end
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "ZESP_CHAM"
+    highlight.Adornee = char
+    highlight.FillColor = Color3.new(1, 1, 1)
+    highlight.FillTransparency = 0.5
+    highlight.OutlineTransparency = 1
+    highlight.Parent = game:GetService("CoreGui")
+    CHAMS[char] = highlight
+end
+
+local function clearCham(char)
+    if CHAMS[char] then
+        CHAMS[char]:Destroy()
+        CHAMS[char] = nil
+    end
+end
+
+local function updateChamColor(plr)
+    if not plr.Character or not CHAMS[plr.Character] then return end
+    local hum = plr.Character:FindFirstChild("Humanoid")
+    if not hum then return end
+    if table.find(KILLER_HPS, hum.Health) then
+        Killer = plr
+        CHAMS[plr.Character].FillColor = Color3.fromRGB(255,0,0)
+    else
+        if plr ~= Killer then
+            CHAMS[plr.Character].FillColor = Color3.new(1,1,1)
+        end
+    end
+end
+
+local function refreshESP()
+    if not ESP_ENABLED then return end
+    for _, plr in pairs(Hallucinations:GetPlayers()) do
+        if plr ~= Yourself and plr.Character then
+            makeCham(plr.Character)
+            updateChamColor(plr)
+        end
+    end
+end
+
+local function setupPlayer(plr)
+    plr.CharacterAdded:Connect(function(char)
+        task.wait(1)
+        if ESP_ENABLED then
+            makeCham(char)
+            local hum = char:FindFirstChild("Humanoid")
+            if hum then
+                hum.HealthChanged:Connect(function()
+                    updateChamColor(plr)
+                end)
+            end
+            updateChamColor(plr)
+        end
+    end)
+end
+
+for _, plr in pairs(Hallucinations:GetPlayers()) do
+    if plr ~= Yourself then
+        setupPlayer(plr)
+    end
+end
+
+Hallucinations.PlayerAdded:Connect(setupPlayer)
+
+game:GetService("RunService").Heartbeat:Connect(function()
+    if ESP_ENABLED then
+        for char, _ in pairs(CHAMS) do
+            if not char.Parent then
+                clearCham(char)
+            end
+        end
+        for _, plr in pairs(Hallucinations:GetPlayers()) do
+            if plr ~= Yourself and plr.Character then
+                updateChamColor(plr)
+            end
+        end
+    end
+end)
+
+local function JohnDoe()
+   if Rayfield.Flags["infinite_stamina"].CurrentValue then
+      Noli.StaminaLoss = 0
+   else
+      Noli.MaxStamina = tonumber(Rayfield.Flags["max_stamina"].CurrentValue) or Elliot.MaxStamina
+      Noli.StaminaGain = tonumber(Rayfield.Flags["stamina_gain"].CurrentValue) or Elliot.StaminaGain
+      Noli.StaminaLoss = tonumber(Rayfield.Flags["stamina_loss"].CurrentValue) or Elliot.StaminaLoss
+   end
+end
+
+local maintab = Catsaken:CreateTab("Main", 0)
+local infstamina = maintab:CreateToggle({
+   Name = "Infinite Stamina",
+   CurrentValue = false,
+   Flag = "infinite_stamina",
+   Callback = function()
+      JohnDoe()
+   end,
+})
+local IMPORTANTLABEL = maintab:CreateSection("The 3 options under will not work if infinite stamina is on.")
+local maxstamina = maintab:CreateInput({
+   Name = "Max Stamina",
+   CurrentValue = tostring(Elliot.MaxStamina),
+   PlaceholderText = tostring(Elliot.MaxStamina),
+   RemoveTextAfterFocusLost = false,
+   Flag = "max_stamina",
+   Callback = function(TextBoxValue)
+      local num = tonumber(TextBoxValue)
+      if num then
+         Noli.MaxStamina = num
+      end
+   end,
+})
+local staminagain = maintab:CreateInput({
+   Name = "Stamina Gain",
+   CurrentValue = tostring(Elliot.StaminaGain),
+   PlaceholderText = tostring(Elliot.StaminaGain),
+   RemoveTextAfterFocusLost = false,
+   Flag = "stamina_gain",
+   Callback = function(TextBoxValue)
+      local num = tonumber(TextBoxValue)
+      if num then
+         Noli.StaminaGain = num
+      end
+   end,
+})
+local staminaloss = maintab:CreateInput({
+   Name = "Stamina Loss",
+   CurrentValue = tostring(Elliot.StaminaLoss),
+   PlaceholderText = tostring(Elliot.StaminaLoss),
+   RemoveTextAfterFocusLost = false,
+   Flag = "stamina_loss",
+   Callback = function(TextBoxValue)
+      local num = tonumber(TextBoxValue)
+      if num then
+         Noli.StaminaLoss = num
+      end
+   end,
+})
+
+local esptab = Catsaken:CreateTab("Visuals", 0)
+local chamstoggleesp = esptab:CreateToggle({
+    Name = "Chams",
+    CurrentValue = false,
+    Flag = "esp_toggle",
+    Callback = function(val)
+        ESP_ENABLED = val
+        if ESP_ENABLED then
+            refreshESP()
+        else
+            for char, _ in pairs(CHAMS) do
+                clearCham(char)
+            end
+        end
+    end
+})
+
+Yourself.CharacterAdded:Connect(function()
+   task.wait(1)
+   JohnDoe()
+end)
+
+JohnDoe()
