@@ -255,8 +255,6 @@ local AutoGenSlider = gentab:CreateSlider({
 
 -- U L T R A K I L L --
 local autoblocktab = Catsaken:CreateTab("Parry.", 0)
-
--- U L T R A K I L L + ERROR 404 MERGED --
 local autoBlockOn = false
 local autoErrorEnabled = false
 local looseFacing = true
@@ -266,8 +264,7 @@ local detectionRangeSq = detectionRange*detectionRange
 local errorDetectionRange = 14
 local errorTriggeredUntil = {}
 local soundHooksMerged = {}
-
--- TOGGLES
+local sexyon0 = autoblocktab:CreateSection("Guest parry")
 local autoblocktoggleXD = autoblocktab:CreateToggle({
     Name = "Auto Block",
     CurrentValue = false,
@@ -297,8 +294,7 @@ local autoblockdetectionrangeXD = autoblocktab:CreateInput({
         detectionRangeSq=detectionRange*detectionRange
     end,
 })
-
--- ERROR 404 TOGGLES
+local sexyon1 = autoblocktab:CreateSection("John doe parry")
 local autoblockErrorToggle = autoblocktab:CreateToggle({
     Name = "Error 404 parry",
     CurrentValue = false,
