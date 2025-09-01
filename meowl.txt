@@ -264,6 +264,7 @@ local detectionRangeSq = detectionRange*detectionRange
 local errorDetectionRange = 14
 local errorTriggeredUntil = {}
 local soundHooksMerged = {}
+local soundTriggeredUntil404 = {}
 local sexyon0 = autoblocktab:CreateSection("Guest parry")
 local autoblocktoggleXD = autoblocktab:CreateToggle({
     Name = "Auto Block",
@@ -367,15 +368,16 @@ local function attemptSoundReaction(sound)
     end
 
     -- ERROR 404 PARRY
-    if autoErrorEnabled and id and autoErrorTriggerSounds[id] then
-        if soundTriggeredUntil404[sound] and tick()<soundTriggeredUntil404[sound] then return end
-        if not soundPos or (myRoot.Position-soundPos).Magnitude<=errorDetectionRange then
-            local args={"UseActorAbility","404Error"}
-            ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
-            soundTriggeredUntil404[sound]=tick()+1.2
-        end
+if autoErrorEnabled and id and autoErrorTriggerSounds[id] then
+    if soundTriggeredUntil404[sound] and tick() < soundTriggeredUntil404[sound] then return end
+    local pos = soundPos or myRoot.Position -- fallback
+    if (myRoot.Position - pos).Magnitude <= errorDetectionRange then
+        local args = {"UseActorAbility","404Error"}
+        ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+        soundTriggeredUntil404[sound] = tick() + 1.2
     end
 end
+
 
 -- HOOK
 local function hookSound(sound)
