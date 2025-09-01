@@ -183,18 +183,7 @@ local chamstoggleesp = esptab:CreateToggle({
    end,
 })
 local optab = Catsaken:CreateTab("Options", 0)
-local defaultheme = optab:CreateButton({
-   Name = "Better Theme",
-   Callback = function()
-   Catsaken.ModifyTheme('Default')
-   end,
-})
-local flashtheme = optab:CreateButton({
-   Name = "Revert Theme",
-   Callback = function()
-   Catsaken.ModifyTheme('Bloom')
-   end,
-})
+
 Yourself.CharacterAdded:Connect(function()
    task.wait(1)
    JohnDoe()
