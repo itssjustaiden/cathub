@@ -12,26 +12,18 @@ local Catsaken = Rayfield:CreateWindow({
    ToggleUIKeybind = "K",
    DisableRayfieldPrompts = true,
    DisableBuildWarnings = true,
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = "cats",
-      FileName = "catsaken"
-   },
+   ConfigurationSaving = {Enabled = true, FolderName = "cats", FileName = "catsaken"},
    KeySystem = false,
 })
 
 local Jason = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
 local Noli = require(Jason)
-local Elliot = {
-   MaxStamina = 110,
-   StaminaGain = 20,
-   StaminaLoss = 10,
-}
+local Elliot = {MaxStamina = 110, StaminaGain = 20, StaminaLoss = 10}
 
 local ESP_ENABLED = false
 local CHAMS = {}
-local KILLER_HPS = {800, 1100, 1111, 1250, 1500}
 local Killer = nil
+local MIN_KILLER_HP = 200
 
 local function makeCham(char)
     if not char or not char:IsA("Model") then return end
@@ -57,7 +49,7 @@ local function updateChamColor(plr)
     if not plr.Character or not CHAMS[plr.Character] then return end
     local hum = plr.Character:FindFirstChild("Humanoid")
     if not hum then return end
-    if table.find(KILLER_HPS, hum.Health) then
+    if hum.Health >= MIN_KILLER_HP then
         Killer = plr
         CHAMS[plr.Character].FillColor = Color3.fromRGB(255,0,0)
     else
@@ -104,9 +96,7 @@ Hallucinations.PlayerAdded:Connect(setupPlayer)
 game:GetService("RunService").Heartbeat:Connect(function()
     if ESP_ENABLED then
         for char, _ in pairs(CHAMS) do
-            if not char.Parent then
-                clearCham(char)
-            end
+            if not char.Parent then clearCham(char) end
         end
         for _, plr in pairs(Hallucinations:GetPlayers()) do
             if plr ~= Yourself and plr.Character then
@@ -178,19 +168,19 @@ local staminaloss = maintab:CreateInput({
 
 local esptab = Catsaken:CreateTab("Visuals", 0)
 local chamstoggleesp = esptab:CreateToggle({
-    Name = "Chams",
-    CurrentValue = false,
-    Flag = "esp_toggle",
-    Callback = function(val)
-        ESP_ENABLED = val
-        if ESP_ENABLED then
-            refreshESP()
-        else
-            for char, _ in pairs(CHAMS) do
-                clearCham(char)
-            end
-        end
-    end
+   Name = "Chams",
+   CurrentValue = false,
+   Flag = "esp_toggle",
+   Callback = function(val)
+      ESP_ENABLED = val
+      if ESP_ENABLED then
+         refreshESP()
+      else
+         for char, _ in pairs(CHAMS) do
+            clearCham(char)
+         end
+      end
+   end,
 })
 
 Yourself.CharacterAdded:Connect(function()
