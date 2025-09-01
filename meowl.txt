@@ -194,7 +194,6 @@ local ThemeMap = {
     ["Ocean"] = "Ocean",
     ["Serenity"] = "Serenity",
 }
-local currentTheme = Catsaken.Theme
 local Themes = {}
 for name,_ in pairs(ThemeMap) do
     table.insert(Themes, name)
@@ -202,11 +201,14 @@ end
 local ihatethis = optab:CreateDropdown({
     Name = "Theme Changer",
     Options = Themes,
-    CurrentOption = {currentTheme},
+    CurrentOption = {"Bloom"},
     MultipleOptions = false,
     Flag = "theme_ch4ng3r",
     Callback = function(option)
-        Catsaken.ModifyTheme(ThemeMap[option])
+        local identifier = ThemeMap[option]
+        if identifier then
+            Catsaken.ModifyTheme(identifier)
+        end
     end,
 })
 Yourself.CharacterAdded:Connect(function()
