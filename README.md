@@ -1,2 +1,4 @@
 ### Hello. Please read this if you're gonna use the script.
-# I have discontinued this script, BUT i will work on it when I'm bored. There are bugs with chams, but it still works.
+# I will work on this script every 3 days. Maybe lower when I'm bored. Please report bugs in:
+
+https://discord.gg/CecJQz3ZCA
