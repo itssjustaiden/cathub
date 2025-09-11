@@ -1,0 +1,71 @@
+local misctab = Catsaken:CreateTab("Misc", 0)
+local fullbrightEnabled = false
+local originalLightingSettings = {}
+local fullbrightfr = misctab:CreateToggle({
+    Name = "Fullbright",
+    CurrentValue = false,
+    Flag = "full_bright",
+    Callback = function(enabled)
+        fullbrightEnabled = enabled
+        local Lighting = game:GetService("Lighting")
+        if enabled then
+            originalLightingSettings.Brightness = Lighting.Brightness
+            originalLightingSettings.Ambient = Lighting.Ambient
+            originalLightingSettings.ClockTime = Lighting.ClockTime
+            originalLightingSettings.FogEnd = Lighting.FogEnd
+            Lighting.Brightness = 2
+            Lighting.Ambient = Color3.new(1, 1, 1)
+            Lighting.ClockTime = 14
+            Lighting.FogEnd = 100000
+        else
+            for k,v in pairs(originalLightingSettings) do
+                Lighting[k] = v
+            end
+        end
+    end
+})
+
+-- OPTIONS TAB --
+local optab = Catsaken:CreateTab("Options", 0)
+local ihatethis = optab:CreateDropdown({
+    Name = "Theme Changer",
+    Options = {"Default","AmberGlow","Amethyst","Bloom","DarkBlue","Green","Light","Ocean","Serenity"},
+    CurrentOption = {"Bloom"},
+    MultipleOptions = false,
+    Flag = "theme_ch4ng3r",
+    Callback = function(sel)
+        local id = type(sel) == "table" and sel[1] or sel
+        if not id then return end
+        local function try_method(obj, key, arg)
+            if not obj or type(obj[key]) ~= "function" then return false end
+            local fn = obj[key]
+            local ok = pcall(fn, arg)
+            if ok then return true end
+            ok = pcall(fn, obj, arg)
+            if ok then return true end
+            return false
+        end
+        local ok = try_method(Catsaken, "ModifyTheme", id)
+        if ok then return end
+        ok = try_method(Rayfield, "ModifyTheme", id)
+        if ok then return end
+        local function find_theme(name)
+            if Rayfield and type(Rayfield.Themes) == "table" then
+                local t = Rayfield.Themes[name] or Rayfield.Themes[name:gsub("%s","")] or Rayfield.Themes[name:lower()]
+                if t then return t end
+            end
+            if Catsaken and type(Catsaken.Themes) == "table" then
+                local t = Catsaken.Themes[name] or Catsaken.Themes[name:gsub("%s","")] or Catsaken.Themes[name:lower()]
+                if t then return t end
+            end
+            return nil
+        end
+        local themeTable = find_theme(id)
+        if themeTable then
+            ok = try_method(Catsaken, "ModifyTheme", themeTable)
+            if ok then return end
+            ok = try_method(Rayfield, "ModifyTheme", themeTable)
+            if ok then return end
+        end
+    end,
+})
