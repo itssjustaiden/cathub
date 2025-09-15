@@ -1,0 +1,525 @@
+local plr = game:GetService("Players")
+local lp = plr.LocalPlayer
+local rs = game:GetService("ReplicatedStorage")
+local cg = game:GetService("CoreGui")
+
+local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
+local success, Library = pcall(function()
+    return loadstring(game:HttpGet(repo .. "Library.lua"))()
+end)
+if not success then
+    warn("Failed to load Library: " .. tostring(Library))
+    return
+end
+local ThemeManager = loadstring(game:HttpGet(repo .. "addons/ThemeManager.lua"))()
+local SaveManager = loadstring(game:HttpGet(repo .. "addons/SaveManager.lua"))()
+
+local Options = Library.Options
+local Toggles = Library.Toggles
+
+Library.ShowToggleFrameInKeybinds = true
+
+local Window = Library:CreateWindow({
+    Title = "Catsaken",
+    Footer = "meow",
+    Icon = 121284264304750,
+    NotifySide = "Right",
+    ShowCustomCursor = true,
+})
+
+local Tabs = {
+    Main = Window:AddTab("Main", "user"),
+    Visuals = Window:AddTab("Visuals", "eye"),
+    Generators = Window:AddTab("Generators", "zap"),
+    Parry = Window:AddTab("Parry", "shield"),
+    Misc = Window:AddTab("Misc", "settings"),
+})
+
+local SprintingModule = rs.Systems.Character.Game.Sprinting
+local Sprinting = require(SprintingModule)
+local DefaultStamina = {MaxStamina = 100, StaminaGain = 20, StaminaLoss = 10}
+local staminaSystemEnabled = false
+local chamsEnabled = false
+local generatorChamsEnabled = false
+local footprintESPEnabled = false
+local itemsxdEnabled = true
+local survivorChamColor = Color3.fromRGB(0, 255, 0)
+local killerChamColor = Color3.fromRGB(255, 0, 0)
+local generatorChamColor = Color3.fromRGB(255, 255, 0)
+local CHAMS = {}
+local footprintESPLabel = {}
+local itemsxdLabels = {}
+
+local function clearItemsxd()
+    for _, gui in pairs(itemsxdLabels) do
+        if gui then gui:Destroy() end
+    end
+    itemsxdLabels = {}
+end
+
+local function createItemsxdLabel(itemPart, text)
+    if not itemsxdLabels[itemPart] then
+        local itemsxdESPlol = Instance.new("BillboardGui")
+        itemsxdESPlol.Adornee = itemPart
+        itemsxdESPlol.Size = UDim2.new(0, 50, 0, 15)
+        itemsxdESPlol.AlwaysOnTop = true
+        itemsxdESPlol.Parent = cg
+        local itemsxdLabel = Instance.new("TextLabel")
+        itemsxdLabel.Size = UDim2.new(1, 0, 1, 0)
+        itemsxdLabel.BackgroundTransparency = 1
+        itemsxdLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        itemsxdLabel.TextStrokeTransparency = 0
+        itemsxdLabel.TextScaled = true
+        itemsxdLabel.Text = text
+        itemsxdLabel.Parent = itemsxdESPlol
+        itemsxdLabels[itemPart] = itemsxdESPlol
+        itemPart.Destroying:Connect(function()
+            if itemsxdLabels[itemPart] then
+                itemsxdLabels[itemPart]:Destroy()
+                itemsxdLabels[itemPart] = nil
+            end
+        end)
+    end
+end
+
+task.spawn(function()
+    while true do
+        if itemsxdEnabled then
+            local ingame = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
+            if ingame then
+                local mapFolder = ingame:FindFirstChild("Map")
+                if mapFolder then
+                    for _, item in ipairs(mapFolder:GetChildren()) do
+                        local part
+                        if item:IsA("Model") then
+                            part = item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart")
+                        elseif item:IsA("BasePart") then
+                            part = item
+                        end
+                        if part then
+                            if item.Name == "Medkit" then
+                                createItemsxdLabel(part, "Medkit")
+                            elseif item.Name == "BloxyCola" then
+                                createItemsxdLabel(part, "Cola")
+                            end
+                        end
+                    end
+                end
+            end
+        else
+            clearItemsxd()
+        end
+        task.wait(2.5)
+    end
+end)
+
+local function clearFootprintESP()
+    for _, label in pairs(footprintESPLabel) do
+        if label then label:Destroy() end
+    end
+    footprintESPLabel = {}
+end
+
+local function createFootprintLabel(shadowPart)
+    if not shadowPart or footprintESPLabel[shadowPart] then return end
+    local footprintESPlol = Instance.new("BillboardGui")
+    footprintESPlol.Adornee = shadowPart
+    footprintESPlol.Size = UDim2.new(0, 100, 0, 30)
+    footprintESPlol.AlwaysOnTop = true
+    footprintESPlol.Parent = cg
+    local feetLabel = Instance.new("TextLabel")
+    feetLabel.Size = UDim2.new(1, 0, 1, 0)
+    feetLabel.BackgroundTransparency = 1
+    feetLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    feetLabel.TextStrokeTransparency = 0
+    feetLabel.TextScaled = true
+    feetLabel.Text = "Feet🤤"
+    feetLabel.Parent = footprintESPlol
+    footprintESPLabel[shadowPart] = footprintESPlol
+    shadowPart.Destroying:Connect(function()
+        if footprintESPLabel[shadowPart] then
+            footprintESPLabel[shadowPart]:Destroy()
+            footprintESPLabel[shadowPart] = nil
+        end
+    end)
+end
+
+local function scanForFootprints()
+    local ingameFolder = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
+    if not ingameFolder then return end
+    for _, folder in ipairs(ingameFolder:GetChildren()) do
+        if folder:IsA("Folder") and folder.Name:find("Shadows") then
+            for _, shadowPart in ipairs(folder:GetChildren()) do
+                if shadowPart:IsA("BasePart") and shadowPart.Name == "Shadow" then
+                    createFootprintLabel(shadowPart)
+                end
+            end
+        end
+    end
+end
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    if footprintESPEnabled then
+        scanForFootprints()
+    end
+end)
+
+local function updateChams()
+    if not chamsEnabled and not generatorChamsEnabled then
+        for _, highlight in pairs(CHAMS) do highlight:Destroy() end
+        table.clear(CHAMS)
+        return
+    end
+
+    if chamsEnabled then
+        for _, player in ipairs(plr:GetPlayers()) do
+            if player ~= lp and player.Character and not CHAMS[player.Character] then
+                local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    local highlight = Instance.new("Highlight", cg)
+                    highlight.Adornee = player.Character
+                    highlight.FillTransparency = 0.5
+                    highlight.OutlineTransparency = 1
+                    if humanoid.Health > 200 then
+                        highlight.Name = "ZESP_KILLER_CHAM"
+                        highlight.FillColor = killerChamColor
+                    else
+                        highlight.Name = "ZESP_SURVIVOR_CHAM"
+                        highlight.FillColor = survivorChamColor
+                    end
+                    CHAMS[player.Character] = highlight
+                    player.Character.AncestryChanged:Connect(function()
+                        if CHAMS[player.Character] then
+                            CHAMS[player.Character]:Destroy()
+                            CHAMS[player.Character] = nil
+                        end
+                    end)
+                end
+            end
+        end
+    end
+
+    if generatorChamsEnabled then
+        local mapFolder = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame") and workspace.Map.Ingame:FindFirstChild("Map")
+        if mapFolder then
+            for _, generator in ipairs(mapFolder:GetChildren()) do
+                if generator.Name == "Generator" and generator:IsA("Model") and not CHAMS[generator] then
+                    local highlight = Instance.new("Highlight", cg)
+                    highlight.Name = "ZESP_GENERATOR_CHAM"
+                    highlight.Adornee = generator
+                    highlight.FillColor = generatorChamColor
+                    highlight.FillTransparency = 0.5
+                    highlight.OutlineTransparency = 1
+                    CHAMS[generator] = highlight
+                    generator.AncestryChanged:Connect(function()
+                        if CHAMS[generator] then
+                            CHAMS[generator]:Destroy()
+                            CHAMS[generator] = nil
+                        end
+                    end)
+                end
+            end
+        end
+    end
+end
+
+task.spawn(function()
+    while true do
+        updateChams()
+        task.wait(2.5)
+    end
+end)
+
+local function setupPlayerChams(player)
+    if player ~= lp then
+        player.CharacterAdded:Connect(function()
+            if chamsEnabled then
+                task.wait(0.1)
+                updateChams()
+            end
+        end)
+    end
+end
+
+for _, player in ipairs(plr:GetPlayers()) do
+    setupPlayerChams(player)
+end
+plr.PlayerAdded:Connect(setupPlayerChams)
+
+local function DoGenss()
+    local IngameMapFolder = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
+    local SubMapFolder = IngameMapFolder and IngameMapFolder:FindFirstChild("Map")
+    if SubMapFolder then
+        for _, g in ipairs(SubMapFolder:GetChildren()) do
+            if g.Name == "Generator" and g.Progress.Value < 100 then
+                g.Remotes.RE:FireServer()
+            end
+        end
+    end
+end
+
+local function UpdateStamina()
+    if not staminaSystemEnabled then
+        Sprinting.MaxStamina = DefaultStamina.MaxStamina
+        Sprinting.StaminaGain = DefaultStamina.StaminaGain
+        Sprinting.StaminaLoss = DefaultStamina.StaminaLoss
+        return
+    end
+    if Toggles.infinite_stamina.Value then
+        Sprinting.StaminaLoss = 0
+    else
+        Sprinting.MaxStamina = tonumber(Options.max_stamina.Value) or DefaultStamina.MaxStamina
+        Sprinting.StaminaGain = tonumber(Options.stamina_gain.Value) or DefaultStamina.StaminaGain
+        Sprinting.StaminaLoss = tonumber(Options.stamina_loss.Value) or DefaultStamina.StaminaLoss
+    end
+end
+
+local MainGroupBox = Tabs.Main:AddLeftGroupbox("Stamina Settings", "activity")
+MainGroupBox:AddToggle("stamina_system_activate", {
+    Text = "Activate",
+    Default = false,
+    Callback = function(val)
+        staminaSystemEnabled = val
+        Toggles.infinite_stamina:SetDisabled(not val)
+        UpdateStamina()
+    end,
+})
+MainGroupBox:AddToggle("infinite_stamina", {
+    Text = "Infinite Stamina",
+    Default = false,
+    Disabled = true,
+    Callback = function(val)
+        if staminaSystemEnabled then
+            UpdateStamina()
+        end
+    end,
+})
+MainGroupBox:AddLabel("The 3 options below will not work if infinite stamina is on.", true)
+MainGroupBox:AddInput("max_stamina", {
+    Text = "Max Stamina",
+    Default = tostring(DefaultStamina.MaxStamina),
+    Placeholder = tostring(DefaultStamina.MaxStamina),
+    Numeric = true,
+    ClearTextOnFocus = false,
+    Callback = function(txt)
+        if staminaSystemEnabled then
+            local n = tonumber(txt)
+            if n then Sprinting.MaxStamina = n end
+            UpdateStamina()
+        end
+    end,
+})
+MainGroupBox:AddInput("stamina_gain", {
+    Text = "Stamina Gain",
+    Default = tostring(DefaultStamina.StaminaGain),
+    Placeholder = tostring(DefaultStamina.StaminaGain),
+    Numeric = true,
+    ClearTextOnFocus = false,
+    Callback = function(txt)
+        if staminaSystemEnabled then
+            local n = tonumber(txt)
+            if n then Sprinting.StaminaGain = n end
+            UpdateStamina()
+        end
+    end,
+})
+MainGroupBox:AddInput("stamina_loss", {
+    Text = "Stamina Loss",
+    Default = tostring(DefaultStamina.StaminaLoss),
+    Placeholder = tostring(DefaultStamina.StaminaLoss),
+    Numeric = true,
+    ClearTextOnFocus = false,
+    Callback = function(txt)
+        if staminaSystemEnabled then
+            local n = tonumber(txt)
+            if n then Sprinting.StaminaLoss = n end
+            UpdateStamina()
+        end
+    end,
+})
+
+local VisualsGroupBox = Tabs.Visuals:AddLeftGroupbox("ESP Settings", "eye")
+VisualsGroupBox:AddToggle("esp_toggle", {
+    Text = "Chams",
+    Default = false,
+    Callback = function(val)
+        chamsEnabled = val
+        updateChams()
+    end,
+})
+VisualsGroupBox:AddToggle("footprint_esp_toggle", {
+    Text = "Digital Footprint ESP",
+    Default = false,
+    Callback = function(val)
+        footprintESPEnabled = val
+        if not val then
+            clearFootprintESP()
+        end
+    end,
+})
+VisualsGroupBox:AddToggle("itemsxd_toggle", {
+    Text = "Items ESP",
+    Default = false,
+    Callback = function(val)
+        itemsxdEnabled = val
+        if not val then
+            clearItemsxd()
+        end
+    end,
+})
+VisualsGroupBox:AddToggle("generator_chams_toggle", {
+    Text = "Generator ESP",
+    Default = false,
+    Callback = function(val)
+        generatorChamsEnabled = val
+        updateChams()
+    end,
+})
+
+local GenCD = 3
+local useless1 = {}
+local GeneratorsGroupBox = Tabs.Generators:AddLeftGroupbox("Generator Settings", "zap")
+GeneratorsGroupBox:AddButton({
+    Text = "Do Generator",
+    Func = DoGenss,
+    Tooltip = "Manually trigger generators",
+})
+GeneratorsGroupBox:AddToggle("auto_gen", {
+    Text = "Auto Generator",
+    Default = false,
+    Callback = function(enabled)
+        if useless1["AutoGenLoop"] then
+            useless1["AutoGenLoop"]:Disconnect()
+            useless1["AutoGenLoop"] = nil
+        end
+        if enabled then
+            useless1["_AutoGenTimer"] = 0
+            useless1["AutoGenLoop"] = game:GetService("RunService").Heartbeat:Connect(function(delta)
+                useless1["_AutoGenTimer"] = useless1["_AutoGenTimer"] + delta
+                if useless1["_AutoGenTimer"] >= GenCD then
+                    useless1["_AutoGenTimer"] = 0
+                    DoGenss()
+                end
+            end)
+        else
+            useless1["_AutoGenTimer"] = 0
+        end
+    end,
+})
+GeneratorsGroupBox:AddSlider("gen_delay_fuck_this_shit", {
+    Text = "Generator Delay",
+    Default = GenCD,
+    Min = 2.5,
+    Max = 10,
+    Rounding = 1,
+    Suffix = "s",
+    Callback = function(val)
+        GenCD = val
+    end,
+})
+
+local autoBlockOn, autoErrorEnabled, looseFacing, facingCheckEnabled = false, false, true, true
+local detectionRange, detectionRangeSq = 18, 18 * 18
+local errorDetectionRange = 14
+local ParryGroupBox = Tabs.Parry:AddLeftGroupbox("Guest Parry", "shield")
+ParryGroupBox:AddToggle("AutoBlockFR", {
+    Text = "Auto Block",
+    Default = false,
+    Callback = function(val)
+        autoBlockOn = val
+    end,
+})
+ParryGroupBox:AddToggle("FacingCheckToggle", {
+    Text = "Enable Facing Check",
+    Default = true,
+    Callback = function(val)
+        facingCheckEnabled = val
+    end,
+})
+ParryGroupBox:AddDropdown("FacingCheckMode", {
+    Text = "Facing Check",
+    Values = { "Loose", "Strict" },
+    Default = 1,
+    Multi = false,
+    Callback = function(opt)
+        looseFacing = opt == "Loose"
+    end,
+})
+ParryGroupBox:AddInput("DetectionRange", {
+    Text = "Detection Range",
+    Default = tostring(detectionRange),
+    Placeholder = "18",
+    Numeric = true,
+    ClearTextOnFocus = false,
+    Callback = function(txt)
+        detectionRange = tonumber(txt) or detectionRange
+        detectionRangeSq = detectionRange * detectionRange
+    end,
+})
+ParryGroupBox:AddLabel("John Doe Parry", true)
+ParryGroupBox:AddToggle("error404_parry", {
+    Text = "Error 404 Parry",
+    Default = false,
+    Callback = function(val)
+        autoErrorEnabled = val
+    end,
+})
+ParryGroupBox:AddSlider("error404_range", {
+    Text = "Error 404 Range",
+    Default = errorDetectionRange,
+    Min = 5,
+    Max = 50,
+    Rounding = 0,
+    Suffix = " studs",
+    Callback = function(val)
+        errorDetectionRange = val
+    end,
+})
+
+local MiscGroupBox = Tabs.Misc:AddLeftGroupbox("Cham Colors", "palette")
+MiscGroupBox:AddLabel("Survivor Chams Color"):AddColorPicker("survivor_cham_picker", {
+    Default = survivorChamColor,
+    Title = "Survivor Chams Color",
+    Callback = function(val)
+        survivorChamColor = val
+        for obj, highlight in pairs(CHAMS) do
+            if highlight.Name == "ZESP_SURVIVOR_CHAM" then
+                highlight.FillColor = val
+            end
+        end
+    end,
+})
+MiscGroupBox:AddLabel("Killer Chams Color"):AddColorPicker("killer_cham_picker", {
+    Default = killerChamColor,
+    Title = "Killer Chams Color",
+    Callback = function(val)
+        killerChamColor = val
+        for obj, highlight in pairs(CHAMS) do
+            if highlight.Name == "ZESP_KILLER_CHAM" then
+                highlight.FillColor = val
+            end
+        end
+    end,
+})
+MiscGroupBox:AddLabel("Generator Chams Color"):AddColorPicker("generator_cham_picker", {
+    Default = generatorChamColor,
+    Title = "Generator Chams Color",
+    Callback = function(val)
+        generatorChamColor = val
+        for obj, highlight in pairs(CHAMS) do
+            if highlight.Name == "ZESP_GENERATOR_CHAM" then
+                highlight.FillColor = val
+            end
+        end
+    end,
+})
+
+lp.CharacterAdded:Connect(function()
+    task.wait(1)
+    UpdateStamina()
+end)
+UpdateStamina()
+
+SaveManager:SetLibrary(Library)
+SaveManager:BuildConfigSection(Tabs["Misc"])
+SaveManager:LoadAutoloadConfig()
