@@ -1,0 +1,11 @@
+-- 5880351207 = Reflex Aim Trainer
+-- 18687417158 = Forsaken
+-- else, game not supported
+local sexynotification = loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/Obsidian/refs/heads/main/Library.lua"))()
+if game.PlaceId == 5880351207 then
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/itssjustaiden/cathub/main/catflex", true))()
+elseif game.PlaceId == 18687417158 then
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/itssjustaiden/cathub/main/catsaken", true))()
+else
+    sexynotification:Notify("Game not supported! https://discord.com/invite/CecJQz3ZCA", 60)
+end
