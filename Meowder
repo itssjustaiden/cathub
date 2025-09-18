@@ -1,8 +1,4 @@
--- 5880351207 = Reflex Aim Trainer
--- 18687417158 = Forsaken
--- 338521019 = identity fraud
 local sexynotification = loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/Obsidian/refs/heads/main/Library.lua"))()
-
 
 if game.PlaceId == 5880351207 then
     sexynotification:Notify("Game: REFLEX - Aim Trainer, loading.", 5)
