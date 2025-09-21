@@ -5,4 +5,4 @@ website for my projects ig
 https://catwarexd.pages.dev
 
 report bugs here thx
-https://discord.gg/CecJQz3ZCA
+discord.gg/VrgNpdeHa3
