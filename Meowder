@@ -14,5 +14,5 @@ elseif game.PlaceId == 338521019 then
 -------------------------------------------------------------------------------------------------------------------------
 else
     gurt:Notify("Game not supported, loading universal! https://discord.com/invite/CecJQz3ZCA", 5)
-    loadstring(game:HttpGet("https://catwarexd.pages.dev/universalXDDDD.lua"))()
+    loadstring(game:HttpGet("https://catwarexd.pages.dev/scripts/Universal.lua"))()
 end
