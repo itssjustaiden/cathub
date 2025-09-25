@@ -13,5 +13,6 @@ elseif game.PlaceId == 338521019 then
     loadstring(game:HttpGet("https://raw.githubusercontent.com/itssjustaiden/cathub/main/idenkittyfraud", true))()
 -------------------------------------------------------------------------------------------------------------------------
 else
-    gurt:Notify("Game not supported! https://discord.com/invite/CecJQz3ZCA", 60)
+    gurt:Notify("Game not supported, loading universal! https://discord.com/invite/CecJQz3ZCA", 5)
+    loadstring(game:HttpGet("https://catwarexd.pages.dev/universalXDDDD.lua"))()
 end
