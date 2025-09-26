@@ -6,11 +6,11 @@ if game.PlaceId == 5880351207 then
 -------------------------------------------------------------------------------------------------------------------------
 elseif game.PlaceId == 18687417158 then
     gurt:Notify("Game: Forsaken, loading.", 5)
-    loadstring(game:HttpGet("https://catwarexd.pages.dev/scripts/Forsaken", true))()
+    loadstring(game:HttpGet("https://catwarexd.pages.dev/scripts/Forsaken.lua", true))()
 -------------------------------------------------------------------------------------------------------------------------
 elseif game.PlaceId == 338521019 then
     gurt:Notify("Game: Identity Fraud, loading.", 5)
-    loadstring(game:HttpGet("https://catwarexd.pages.dev/scripts/Identity", true))()
+    loadstring(game:HttpGet("https://catwarexd.pages.dev/scripts/Identity.lua", true))()
 -------------------------------------------------------------------------------------------------------------------------
 else
     gurt:Notify("Game not supported, loading universal! https://discord.com/invite/CecJQz3ZCA", 5)
