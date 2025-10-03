@@ -12,6 +12,10 @@ elseif game.PlaceId == 338521019 then
     gurt:Notify("Game: Identity Fraud, loading.", 5)
     loadstring(game:HttpGet("https://catwarexd.pages.dev/scripts/Identity.lua", true))()
 -------------------------------------------------------------------------------------------------------------------------
+elseif game.PlaceId == 142823291 then
+    gurt:Notify("Game: Murder Mystery 2, loading.", 5)
+    loadstring(game:HttpGet("https://catwarexd.pages.dev/scripts/mm2.lua", true))()
+-------------------------------------------------------------------------------------------------------------------------
 else
     gurt:Notify("Game not supported, loading universal! https://discord.com/invite/CecJQz3ZCA", 5)
     loadstring(game:HttpGet("https://catwarexd.pages.dev/scripts/Universal.lua"))()
