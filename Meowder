@@ -2,7 +2,7 @@ local gurt = loadstring(game:HttpGet("https://raw.githubusercontent.com/deividco
 -------------------------------------------------------------------------------------------------------------------------
 if game.PlaceId == 5880351207 then
     gurt:Notify("Game: REFLEX - Aim Trainer, loading.", 5)
-    loadstring(game:HttpGet("https://catwarexd.pages.dev/scripts/Reflex.lua", true))()
+    loadstring(game:HttpGet("https://catwarexd.pages.dev/scripts/reflex.lua", true))()
 -------------------------------------------------------------------------------------------------------------------------
 elseif game.PlaceId == 18687417158 then
     gurt:Notify("Game: Forsaken (worst game), loading.", 5)
