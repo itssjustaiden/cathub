@@ -2,25 +2,25 @@ local gurt = loadstring(game:HttpGet("https://raw.githubusercontent.com/deividco
 -------------------------------------------------------------------------------------------------------------------------
 if game.PlaceId == 5880351207 then
     gurt:Notify("Game: REFLEX - Aim Trainer, loading.", 5)
-    loadstring(game:HttpGet("https://catwarexd.pages.dev/scripts/reflex.lua", true))()
+    loadstring(game:HttpGet("https://catslol.pages.dev/scripts/reflex.lua", true))()
 -------------------------------------------------------------------------------------------------------------------------
 elseif game.PlaceId == 18687417158 then
     gurt:Notify("Game: Forsaken (worst game), loading.", 5)
-    loadstring(game:HttpGet("https://catwarexd.pages.dev/scripts/Forsaken.lua", true))()
+    loadstring(game:HttpGet("https://catslol.pages.dev/scripts/Forsaken.lua", true))()
 -------------------------------------------------------------------------------------------------------------------------
 elseif game.PlaceId == 338521019 then
     gurt:Notify("Game: Identity Fraud, loading.", 5)
-    loadstring(game:HttpGet("https://catwarexd.pages.dev/scripts/Identity.lua", true))()
+    loadstring(game:HttpGet("https://catslol.pages.dev/scripts/Identity.lua", true))()
 -------------------------------------------------------------------------------------------------------------------------
 elseif game.PlaceId == 142823291 then
     gurt:Notify("Game: Murder Mystery 2, loading.", 5)
-    loadstring(game:HttpGet("https://catwarexd.pages.dev/scripts/mm2.lua", true))()
+    loadstring(game:HttpGet("https://catslol.pages.dev/scripts/mm2.lua", true))()
 -------------------------------------------------------------------------------------------------------------------------
 elseif game.PlaceId == 71895508397153 then
     gurt:Notify("Game: Die Of Death (best game) script, loading.", 5)
-    loadstring(game:HttpGet("https://catwarexd.pages.dev/scripts/dod.lua", true))()
+    loadstring(game:HttpGet("https://catslol.pages.dev/scripts/dod.lua", true))()
 -------------------------------------------------------------------------------------------------------------------------
 else
     gurt:Notify("Game not supported, loading universal! https://discord.com/invite/CecJQz3ZCA", 5)
-    loadstring(game:HttpGet("https://catwarexd.pages.dev/scripts/universal.lua"))()
+    loadstring(game:HttpGet("https://catslol.pages.dev/scripts/universal.lua"))()
 end
